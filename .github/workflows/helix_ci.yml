@@ -14,10 +14,10 @@ jobs:
         python-version: ["3.9", "3.10", "3.11"]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -54,7 +54,7 @@ jobs:
 
         # 5. Generate Glyph
         # Extract the Merkle Root from the JSON to pass to the glyph command
-        MERKLE=$(grep -o '"merkle_root": "[^"]*"' artifacts/*.dbc.json | cut -d'"' -f4)
+        MERKLE=$(grep -o '"merkle_root": "[^"]*"' artifacts/*.dbc.json | head -n 1 | cut -d'"' -f4)
         echo "🎨 Generating Glyph for Root: $MERKLE"
         helix glyph "$MERKLE" ACTIVE --name "Test_Agent_01" --output svg --svg-file artifacts/agent.svg
 
@@ -64,11 +64,12 @@ jobs:
           echo "✅ All artifacts generated successfully."
         else
           echo "❌ Missing artifacts."
+          ls -R artifacts
           exit 1
         fi
 
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: helix-test-output-${{ matrix.python-version }}
         path: artifacts/
