@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """
 Basic DBC/SUITCASE operations for testing and demonstration.
+Core logic for the Helix-TTD Identity & Custody stack.
 """
 
 import hashlib
 import json
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 def create_dbc(custodian_id: str, agent_name: str) -> Dict:
     """Create a basic DBC structure."""
+    # Ensure UTC for consistency
     timestamp = datetime.utcnow().isoformat() + "Z"
     
     # Create DBC content
@@ -20,12 +22,12 @@ def create_dbc(custodian_id: str, agent_name: str) -> Dict:
         "custodian_id": custodian_id,
         "timestamp": timestamp,
         "creation_reason": "Agent instantiation",
-        "hardware_sig": "TPM2.0_SIMULATED",  # In real implementation, this would be actual hardware signature
+        "hardware_sig": "TPM2.0_SIMULATED",  # In real implementation, this tracks back to the YubiKey
         "parent_dbc": None  # Root DBC has no parent
     }
     
-    # Create Merkle root (simplified)
-    content_str = json.dumps(dbc_data, sort_keys=True)
+    # Create Merkle root (Deterministic: Sort keys, no spaces)
+    content_str = json.dumps(dbc_data, sort_keys=True, separators=(',', ':'))
     merkle_root = hashlib.sha256(content_str.encode()).hexdigest()
     
     dbc_data["merkle_root"] = merkle_root
@@ -37,7 +39,7 @@ def create_suitcase_entry(
     dbc_root: str,
     event_type: str,
     details: Dict,
-    previous_hash: str = None
+    previous_hash: Optional[str] = None
 ) -> Dict:
     """Create a SUITCASE entry (append-only log)."""
     timestamp = datetime.utcnow().isoformat() + "Z"
@@ -51,17 +53,19 @@ def create_suitcase_entry(
         "details": details
     }
     
-    # Calculate hash chain
-    entry_str = json.dumps(entry, sort_keys=True)
+    # Calculate hash of THIS entry content
+    entry_str = json.dumps(entry, sort_keys=True, separators=(',', ':'))
     current_hash = hashlib.sha256(entry_str.encode()).hexdigest()
     
+    # Chain Logic
     if previous_hash:
-        # Chain the hashes
-        chain_hash = hashlib.sha256(f"{previous_hash}{current_hash}".encode()).hexdigest()
+        # Chain: Hash(Previous Hash + Current Content Hash)
+        chain_payload = f"{previous_hash}{current_hash}"
+        chain_hash = hashlib.sha256(chain_payload.encode()).hexdigest()
         entry["previous_hash"] = previous_hash
         entry["hash_chain"] = chain_hash
     else:
-        # First entry
+        # Genesis Entry: Chain is just the current hash
         entry["hash_chain"] = current_hash
     
     entry["entry_hash"] = current_hash
