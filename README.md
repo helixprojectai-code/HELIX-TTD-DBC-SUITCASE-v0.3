@@ -27,3 +27,43 @@ Rights, duties, and legal exposure stop at the keyholder. There is no "AI Person
 
 # Append a capability to the Suitcase
 ./cli/suitcase_append.sh --capability "read_only_access"
+
+---
+
+## 📂 2. Specifications (`/specs`)
+
+### `specs/dbc/dbc-schema-v0.1.json`
+*The Extreme Minimalism Spec.*
+
+```json
+{
+  "$schema": "http://helix-ttd.io/schemas/dbc-v0.1.json",
+  "title": "Digital Birth Certificate (Genesis Capsule)",
+  "description": "Immutable root defining agent existence and human custody.",
+  "type": "object",
+  "required": ["agent_id", "custodian_pubkey", "timestamp", "merkle_root", "genesis_signature"],
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "UUID v4 unique identifier."
+    },
+    "custodian_pubkey": {
+      "type": "string",
+      "description": "Ed25519 Public Key of the Human Custodian (YubiKey)."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation time. Fixed at mint."
+    },
+    "merkle_root": {
+      "type": "string",
+      "description": "SHA-256 root hash of the initial configuration state."
+    },
+    "genesis_signature": {
+      "type": "string",
+      "description": "Cryptographic signature of the object by the custodian_pubkey."
+    }
+  },
+  "additionalProperties": false
+}
