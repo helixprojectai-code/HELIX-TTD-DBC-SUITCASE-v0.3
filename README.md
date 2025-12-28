@@ -30,6 +30,26 @@ This repository defines the protocols for **Helix-TTD Identity & Custody**. It e
 - **143 cloners** = Real developers taking real action
 - **2.15 clones each** = They're seriously testing it
 
+**Update from me (Stephen):**
+
+To the inevitable "how do you make money?" or "what about competition?" questions:
+
+Apache 2.0 isn't a bug - it's the feature.
+
+This isn't a product. It's infrastructure. Standards don't get sold; they get adopted.
+
+The 143 teams cloning at 5 AM on a Saturday aren't looking for a vendor. They're looking for a foundation they can build on without permission.
+
+Apache 2.0 says: "Take it. Use it. Ship it. In your enterprise. In your startup. In your research. We don't need to own it. We need it to exist."
+
+Want to "compete"? Great! Fork it, improve it, sell it. You're helping establish the standard. That's how this works.
+
+Structural custody is too important to be proprietary. Accountable AI can't be a premium feature.
+
+So yes, it's Apache 2.0. And that's exactly why 143 teams are evaluating it this weekend.
+
+Quack. 🦆🔒
+
 ### 🌍 HOW THIS SPREAD WITHOUT VIEWS
 
 **The invisible network effect:**
