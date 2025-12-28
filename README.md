@@ -46,7 +46,7 @@ Rights, duties, and legal exposure stop at the keyholder. There is no "AI Person
 ### `specs/dbc/dbc-schema-v0.1.json`
 *The Extreme Minimalism Spec.*
 
-```json
+```
 {
   "$schema": "http://helix-ttd.io/schemas/dbc-v0.1.json",
   "title": "Digital Birth Certificate (Genesis Capsule)",
