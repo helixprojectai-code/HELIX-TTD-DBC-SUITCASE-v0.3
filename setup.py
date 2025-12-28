@@ -2,8 +2,7 @@
 """
 Setup script for HELIX-TTD-DBC-SUITCASE v0.3
 """
-
-from setuptools import setup, find_packages
+from setuptools import setup
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -16,13 +15,13 @@ setup(
     description="The missing identity & custody primitive for sovereign AI agents",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/stephenh67/HELIX-TTD-DBC-SUITCASE-v0.3",
-    packages=find_packages(),
+    url="https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3",
+    py_modules=["helix"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: Apache 2.0 Software License",
+        "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
@@ -45,12 +44,4 @@ setup(
         ],
     },
     include_package_data=True,
-    license="Apache-2.0",
-    package_data={
-        "": ["*.md", "*.txt"],
-    },
-    project_urls={
-        "Bug Reports": "https://github.com/stephenh67/HELIX-TTD-DBC-SUITCASE-v0.3/issues",
-        "Source": "https://github.com/stephenh67/HELIX-TTD-DBC-SUITCASE-v0.3",
-    },
 )
