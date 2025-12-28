@@ -5,6 +5,8 @@
 
 This repository defines the protocols for **Helix-TTD Identity & Custody**. It enforces a strict "No Orphaned Agents" policy by binding every AI agent to a cryptographic root held by a human custodian.
 
+![The Signal Reader](assets/biopunk.265Z.png)
+
 ## Core Components
 
 1.  **DBC (Digital Birth Certificate):** The immutable genesis. A minimalist JSON object anchored to a physical YubiKey (Ed25519) that proves root custody.
