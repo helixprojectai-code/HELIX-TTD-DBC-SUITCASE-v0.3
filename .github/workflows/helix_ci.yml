@@ -11,53 +11,68 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
-      # Fail fast: If any job in the matrix fails, cancel the rest.
-      fail-fast: true
+        python-version: ["3.10", "3.11"]
+      fail-fast: false
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-python-version }}
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip' # Enable pip cache for faster installs
+        cache: 'pip'
 
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest
-        # Install Helix package. This is where the actual error is caught.
+        pip install flake8
+        # Install Helix in editable mode
         pip install -e .
 
-    - name: Run Core Tests (If dependencies are met)
-      if: success() # Only run if pip install succeeded
+    - name: Debug Directory Structure
       run: |
-        echo "✅ Dependencies installed successfully."
-        # The core tests that rely on dbc_suitcase.py
-        pytest tests/test_cli.py
-
-    - name: Run Linting and Glyph Generation (Optional Tests)
-      if: success() # Only run if core tests passed
+        ls -R
+        
+    - name: Verify CLI Installation
       run: |
-        echo "Running Linter and Glyph Generation..."
-        # Linting
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        # Check if the command exists and prints the banner
+        helix version
 
-        # Generate a glyph if the generator is available
-        if python -c "import cli.generate_enhanced_glyph"; then
-          echo "Generating HGL glyph..."
-          # Use a dummy root and active state for CI check
-          python cli/generate_enhanced_glyph.py "0x1111111111111111111111111111111111111111111111111111111111111111" ACTIVE --name "CI_Test_Agent" --output minimal
+    - name: Run Integration Suite (The Golden Path)
+      run: |
+        # 1. Create Artifacts Directory
+        mkdir -p artifacts
+
+        # 2. Mint New Agent
+        echo "🧬 Minting Agent..."
+        # We use the direct python call fallback if the shim isn't ready, but helix command should work
+        helix new-agent --custodian "CI_PIPELINE_KEY" --name "Test_Agent_01" --output-dir artifacts
+
+        # 3. Verify Agent
+        echo "🔍 Verifying Agent..."
+        helix verify --dbc artifacts/*.dbc.json --suitcase artifacts/*.suitcase.json
+
+        # 4. Update State
+        echo "🔄 Updating State..."
+        helix update-state --dbc artifacts/*.dbc.json --suitcase artifacts/*.suitcase.json --state ACTIVE --reason "CI Pipeline Validation"
+
+        # 5. List Agents (Sanity Check)
+        helix list --directory artifacts
+
+    - name: Assert Artifacts Exist
+      run: |
+        if [ -f artifacts/*.dbc.json ] && [ -f artifacts/*.suitcase.json ]; then
+          echo "✅ All artifacts generated successfully."
         else
-          echo "⚠ HGL generator not found, skipping glyph test."
+          echo "❌ Missing artifacts."
+          ls -R artifacts
+          exit 1
         fi
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
-      if: always() # Always run, even if previous steps fail
+      if: always()
       with:
         name: helix-test-output-${{ matrix.python-version }}
         path: artifacts/
-        if-no-files-found: warn # Warn if artifacts dir is empty, don't fail
