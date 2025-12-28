@@ -12,7 +12,7 @@ setup(
     name="helix-ttd-dbc-suitcase",
     version="0.3.0",
     author="Stephen Hope",
-    author_email="stephen@helix-ttd.ai",
+    author_email="helix.project.ai@helixprojectai.com",
     description="The missing identity & custody primitive for sovereign AI agents",
     long_description=long_description,
     long_description_content_type="text/markdown",
