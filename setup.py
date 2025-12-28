@@ -22,7 +22,7 @@ setup(
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: Apache 2.0 License",
+        "License :: OSI Approved :: Apache 2.0 Software License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
@@ -45,6 +45,7 @@ setup(
         ],
     },
     include_package_data=True,
+    license="Apache-2.0",
     package_data={
         "": ["*.md", "*.txt"],
     },
