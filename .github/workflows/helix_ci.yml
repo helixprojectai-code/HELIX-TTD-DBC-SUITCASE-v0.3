@@ -27,38 +27,47 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install flake8
-        # Install Helix in editable mode
+        # Install dependencies required by setup.py (just in case)
+        pip install cryptography rich colorama
+        # We don't need 'pip install -e .' if we run python directly, 
+        # but we do it to check setup.py validity.
         pip install -e .
 
-    - name: Debug Directory Structure
+    - name: Debug File Structure (See what is actually here)
       run: |
-        ls -R
-        
-    - name: Verify CLI Installation
+        echo "📂 Root Directory:"
+        ls -la
+        echo "📂 CLI Directory:"
+        ls -la cli/ || echo "❌ CLI dir missing"
+
+    - name: Verify CLI (Direct Python Execution)
+      env:
+        PYTHONPATH: .
       run: |
-        # Check if the command exists and prints the banner
-        helix version
+        # Run python directly to avoid path issues
+        python3 helix.py version
 
     - name: Run Integration Suite (The Golden Path)
+      env:
+        PYTHONPATH: .
       run: |
         # 1. Create Artifacts Directory
         mkdir -p artifacts
 
         # 2. Mint New Agent
         echo "🧬 Minting Agent..."
-        # We use the direct python call fallback if the shim isn't ready, but helix command should work
-        helix new-agent --custodian "CI_PIPELINE_KEY" --name "Test_Agent_01" --output-dir artifacts
+        python3 helix.py new-agent --custodian "CI_PIPELINE_KEY" --name "Test_Agent_01" --output-dir artifacts
 
         # 3. Verify Agent
         echo "🔍 Verifying Agent..."
-        helix verify --dbc artifacts/*.dbc.json --suitcase artifacts/*.suitcase.json
+        python3 helix.py verify --dbc artifacts/*.dbc.json --suitcase artifacts/*.suitcase.json
 
         # 4. Update State
         echo "🔄 Updating State..."
-        helix update-state --dbc artifacts/*.dbc.json --suitcase artifacts/*.suitcase.json --state ACTIVE --reason "CI Pipeline Validation"
+        python3 helix.py update-state --dbc artifacts/*.dbc.json --suitcase artifacts/*.suitcase.json --state ACTIVE --reason "CI Pipeline Validation"
 
-        # 5. List Agents (Sanity Check)
-        helix list --directory artifacts
+        # 5. List Agents
+        python3 helix.py list --directory artifacts
 
     - name: Assert Artifacts Exist
       run: |
