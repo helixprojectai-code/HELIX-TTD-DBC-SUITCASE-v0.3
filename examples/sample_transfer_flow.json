@@ -1,0 +1,9 @@
+{
+  "event": "TRANSFER",
+  "timestamp": "2025-12-28T12:00:00Z",
+  "previous_dbc": "dbc_hash_123...",
+  "new_dbc": "dbc_hash_456...",
+  "reason": "Hardware Upgrade (YubiKey Swap)",
+  "custodian_signature": "sig_ed25519_xyz...",
+  "status_flag": "OLD_DBC_SUPERSEDED"
+}
