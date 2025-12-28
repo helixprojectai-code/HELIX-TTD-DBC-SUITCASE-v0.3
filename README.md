@@ -199,8 +199,6 @@ python helix.py glyph <your_merkle_root> ACTIVE --output svg
 # 4. Test structural custody
 python helix.py verify --dbc *.dbc.json --suitcase *.suitcase.json
 
-
-```markdown
 ---
 **Last Updated:** 3:00 PM EST (10 hours of stealth adoption)  
 
