@@ -3,6 +3,8 @@
 [![Helix-TTD Core CI](https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3/actions/workflows/helix_ci.yml/badge.svg)](https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3/actions/workflows/helix_ci.yml)
 **The structural prevention of anthropomorphic evasion.**
 
+![License](https://img.shields.io/badge/license-Apache_2.0-blue.svg)
+![Status](https://img.shields.io/badge/status-STEALTH_VIRAL-TEAL.svg)
 
 ![The Signal Reader](assets/biopunk.265Z.png)
 
