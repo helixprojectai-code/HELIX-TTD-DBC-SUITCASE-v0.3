@@ -1,6 +1,6 @@
 # DBC × SUITCASE: Unified Identity & Custody Stack
 ### Version v0.3 // December 28, 2025
-
+[![Helix-TTD Core CI](https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3/actions/workflows/helix_ci.yml/badge.svg)](https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3/actions/workflows/helix_ci.yml)
 **The structural prevention of anthropomorphic evasion.**
 
 This repository defines the protocols for **Helix-TTD Identity & Custody**. It enforces a strict "No Orphaned Agents" policy by binding every AI agent to a cryptographic root held by a human custodian.
