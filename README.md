@@ -67,25 +67,35 @@ Rights, duties, and legal exposure stop at the keyholder. There is no "AI Person
   },
   "additionalProperties": false
 }
+
+
 # HELIX-TTD-DBC-SUITCASE v0.3
 
 **The missing identity & custody primitive for sovereign AI agents.**
 
-## Overview
+> **DBC**: Immutable "birth certificate" — hardware-bound proof that every agent has exactly one human custodian.  
+> **SUITCASE**: Portable, append-only lifecycle log — capabilities, attestations, telemetry — always tethered to a valid DBC.  
+> **HGL**: Human-Glyph Language — visual identity system for AI agents.
 
-HELIX-TTD-DBC-SUITCASE provides structural custody for autonomous AI agents through:
-- **DBC**: Immutable "birth certificate" with hardware-bound proof of human custody
-- **SUITCASE**: Portable, append-only lifecycle log tethered to DBC
-- **HGL**: Human-Glyph Language for visual agent identity
+---
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
+# Install
+pip install -e .
+
+# Create a new AI agent
+helix new-agent --custodian alice_001 --name "Alpha-Agent-01"
+
+# List all agents
+helix list
+
 # Generate a glyph for an agent
-python cli/generate_enhanced_glyph.py 0x3a2b1f8c9d ACTIVE --name "Alpha-Agent"
+helix glyph 0x3a2b1f8c9d ACTIVE --name "Alpha-Agent" --output svg --svg-file agent.svg
 
-# Run DBC/SUITCASE demo
-python cli/dbc_suitcase.py
+# Verify agent integrity
+helix verify --dbc DBC-*.dbc.json --suitcase DBC-*.suitcase.json
 
-# Generate SVG output
-python cli/generate_enhanced_glyph.py 0x3a2b1f8c9d ACTIVE --output svg --svg-file agent.svg
+# Update agent state
+helix update-state --dbc DBC-*.dbc.json --suitcase DBC-*.suitcase.json --state RESTRICTED --reason "Behavioral anomaly detected"
