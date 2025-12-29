@@ -37,6 +37,7 @@ setup(
         "cryptography>=41.0.0",
         "colorama>=0.4.6",
         "rich>=13.0.0",
+        "streamlit>=1.30.0",  # <--- ADD THIS
     ],
     entry_points={
         "console_scripts": [
