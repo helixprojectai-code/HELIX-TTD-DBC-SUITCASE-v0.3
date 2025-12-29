@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-HELIX-TTD-DBC-SUITCASE v0.3 - Unified CLI
+HELIX-TTD-DBC-SUITCASE v0.3.1 - Unified CLI
 The missing identity & custody primitive for sovereign AI agents.
 """
 import argparse
@@ -51,7 +51,7 @@ class HelixCLI:
     """Main CLI orchestrator for HELIX-TTD-DBC-SUITCASE framework."""
 
     def __init__(self):
-        self.version = "v0.3"
+        self.version = "v0.3.1"
         self.banner = f"""
 ╔══════════════════════════════════════════════════════════╗
 ║ HELIX-TTD-DBC-SUITCASE {self.version:<29}║
@@ -134,16 +134,17 @@ Pure structural custody. 🦆🔒
             "svg": out / f"{id_}.svg" if glyph_data else None,
         }
 
-        with open(paths["dbc"], "w") as f:
+        # WINDOWS FIX: Force utf-8 encoding on all file writes
+        with open(paths["dbc"], "w", encoding="utf-8") as f:
             json.dump(dbc, f, indent=2)
-        with open(paths["suitcase"], "w") as f:
+        with open(paths["suitcase"], "w", encoding="utf-8") as f:
             json.dump(suitcase, f, indent=2)
 
         if glyph_data:
-            with open(paths["glyph"], "w") as f:
+            with open(paths["glyph"], "w", encoding="utf-8") as f:
                 json.dump(glyph_data, f, indent=2)
             if hasattr(gen, "generate_svg_template") and paths["svg"]:
-                with open(paths["svg"], "w") as f:
+                with open(paths["svg"], "w", encoding="utf-8") as f:
                     f.write(gen.generate_svg_template(glyph_data))
 
         print(f"\n📁 Agent saved to: {out.resolve()}")
@@ -160,6 +161,7 @@ Pure structural custody. 🦆🔒
 
         print("\n🔍 Verifying agent integrity...")
         try:
+            # WINDOWS FIX: Force utf-8 reading
             with open(dbc_file, "r", encoding="utf-8") as f:
                 dbc = json.load(f)
             with open(suitcase_file, "r", encoding="utf-8") as f:
@@ -218,8 +220,9 @@ Pure structural custody. 🦆🔒
             sys.exit(1)
 
         try:
-            with open(dbc_file, "r") as f: dbc = json.load(f)
-            with open(suitcase_file, "r") as f: suitcase = json.load(f)
+            # WINDOWS FIX: Force utf-8 reading/writing
+            with open(dbc_file, "r", encoding="utf-8") as f: dbc = json.load(f)
+            with open(suitcase_file, "r", encoding="utf-8") as f: suitcase = json.load(f)
 
             last_hash = suitcase[-1]["entry_hash"] if suitcase else None
 
@@ -231,7 +234,7 @@ Pure structural custody. 🦆🔒
             )
 
             suitcase.append(new_entry)
-            with open(suitcase_file, "w") as f:
+            with open(suitcase_file, "w", encoding="utf-8") as f:
                 json.dump(suitcase, f, indent=2)
 
             print(f"✓ State updated to {new_state}")
@@ -248,9 +251,9 @@ Pure structural custody. 🦆🔒
                         agent_name=dbc.get("agent_name"),
                     )
                     if paths["glyph"]:
-                        with open(paths["glyph"], "w") as f: json.dump(updated, f, indent=2)
+                        with open(paths["glyph"], "w", encoding="utf-8") as f: json.dump(updated, f, indent=2)
                     if paths["svg"]:
-                        with open(paths["svg"], "w") as f: f.write(gen.generate_svg_template(updated))
+                        with open(paths["svg"], "w", encoding="utf-8") as f: f.write(gen.generate_svg_template(updated))
                     print(f"✓ Visuals updated")
                 except Exception as e:
                     print(f"⚠ Glyph update failed: {e}")
@@ -270,6 +273,7 @@ Pure structural custody. 🦆🔒
             return
         for dbc_file in dbc_files:
             try:
+                # WINDOWS FIX: Force utf-8
                 with open(dbc_file, "r", encoding="utf-8") as f:
                     dbc = json.load(f)
                 paths = derive_agent_paths(str(dbc_file))
@@ -364,7 +368,7 @@ Pure structural custody. 🦆🔒
 
 def main():
     parser = argparse.ArgumentParser(
-        description="HELIX-TTD-DBC-SUITCASE v0.3",
+        description="HELIX-TTD-DBC-SUITCASE v0.3.1",
         epilog="Example: helix new-agent --custodian alice --name AlphaBot",
     )
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
@@ -384,7 +388,8 @@ def main():
     update = subparsers.add_parser("update-state")
     update.add_argument("--dbc", required=True)
     update.add_argument("--suitcase", required=True)
-    update.add_argument("--state", "-s", required=True)
+    update.add_argument("--state", "-s", required=True,
+                        choices=["ACTIVE", "RESTRICTED", "REVOKED", "QUARANTINED", "SUSPENDED"])
     update.add_argument("--reason", "-r", required=True)
 
     # list
