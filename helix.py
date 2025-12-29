@@ -12,23 +12,22 @@ from typing import Dict, Optional, Any, List
 
 # --- CRITICAL IMPORTS (The Engine) ---
 try:
-    from cli.dbc_suitcase import create_dbc, create_suitcase_entry
+    from cli.dbc_suitcase import create_dbc, create_suitcase_entry, validate_entry_integrity
     CRITICAL_DEPS_OK = True
 except ImportError as e:
     CRITICAL_DEPS_OK = False
-    print(f"❌ CRITICAL ERROR: Could not import 'cli.dbc_suitcase'. {e}")
+    # We don't print error here to allow 'helix version' or 'help' to run without deps
+    # Errors will be raised when commands requiring these modules are executed.
 
 # --- OPTIONAL IMPORTS (The Visuals) ---
 EnhancedHGLGenerator = None
 try:
-    # Try importing the class from the specific file
     from cli.generate_enhanced_glyph import EnhancedHGLGenerator
 except ImportError:
     try:
-        # Fallback: maybe it's in the other file?
         from cli.generate_hgl import EnhancedHGLGenerator
     except ImportError:
-        pass  # Glyph generation will be disabled
+        pass  # Glyph generation will be disabled gracefully
 
 def derive_agent_paths(dbc_file: str) -> Dict[str, Path]:
     """Derive all related artifact paths from a DBC filename."""
@@ -175,39 +174,43 @@ Pure structural custody. 🦆🔒
             dbc_valid = all(field in dbc for field in required)
             print(f" ✓ Structure: {'VALID' if dbc_valid else 'INVALID'}")
 
-            print("\n💼 SUITCASE Verification:")
+            print("\n💼 SUITCASE Deep Verification:")
             chain_valid = True
-            previous_hash = None
+            content_valid = True
+            
             for i, entry in enumerate(suitcase):
+                # 1. Check Tether
                 tethered = entry.get("dbc_root") == dbc.get("merkle_root")
-                entry_hash = entry.get("entry_hash")
-                expected_prev = entry.get("previous_hash")
                 
-                # Verify Chain Link (skipping genesis prev check)
-                if i > 0 and expected_prev != previous_hash:
-                    chain_valid = False
-                    print(f" ⚠ Entry {i}: Hash chain broken")
+                # 2. Deep Content Validation (Re-Hashing)
+                is_integrity_ok, msg = validate_entry_integrity(entry)
                 
-                # Check for tampering (Simulated)
-                # In real prod, we would re-hash the content and match entry_hash
+                status_icon = "✓"
+                if not tethered or not is_integrity_ok:
+                    status_icon = "✗"
+                    content_valid = False
+                    chain_valid = False # Implicit failure
+                    print(f" ⚠ Entry {i} Issue: {msg}")
                 
-                print(f" Entry {i}: {entry.get('event_type', 'Unknown')}")
-                print(f" • Tethered: {'✓' if tethered else '✗'}")
-                previous_hash = entry_hash
+                print(f" {status_icon} Entry {i}: {entry.get('event_type', 'Unknown')}")
 
-            tether_ok = all(e.get("dbc_root") == dbc.get("merkle_root") for e in suitcase)
-            print(f"\n🔗 Hash Chain: {'✓ VALID' if chain_valid else '✗ INVALID'}")
-            print(f"📎 DBC Tether: {'✓ INTACT' if tether_ok else '✗ BROKEN'}")
+            print("-" * 40)
+            print(f"🔐 Content Integrity: {'✓ VERIFIED' if content_valid else '✗ TAMPERED'}")
+            print(f"📎 DBC Tether: {'✓ INTACT' if content_valid else '✗ BROKEN'}")
 
+            if not content_valid or not dbc_valid:
+                print("❌ VERIFICATION FAILED")
+                sys.exit(1) # Fail CI/Script on tampering
+
+            print("✅ VERIFICATION PASSED")
             return {
                 "dbc_valid": dbc_valid,
-                "chain_valid": chain_valid,
-                "tethered": tether_ok,
+                "content_valid": content_valid,
                 "entry_count": len(suitcase),
             }
         except Exception as e:
-            print(f" ✗ Error: {e}")
-            sys.exit(1) # Fail CI if verification errors
+            print(f" ✗ Error during verification: {e}")
+            sys.exit(1)
 
     def update_agent_state(self, dbc_file: str, suitcase_file: str, new_state: str, reason: str) -> Optional[dict]:
         if not CRITICAL_DEPS_OK:
@@ -258,19 +261,106 @@ Pure structural custody. 🦆🔒
             sys.exit(1)
 
     def list_agents(self, directory: str = ".") -> None:
-        # (Implementation unchanged, just adding pass for brevity in diff)
         print(f"\n📋 Agents in '{directory}':")
-        # ... (rest of list code) ...
-        pass
+        print("-" * 60)
+        path = Path(directory)
+        dbc_files = list(path.glob("*.dbc.json"))
+        if not dbc_files:
+            print(" No agents found")
+            return
+        for dbc_file in dbc_files:
+            try:
+                with open(dbc_file, "r", encoding="utf-8") as f:
+                    dbc = json.load(f)
+                paths = derive_agent_paths(str(dbc_file))
+                suitcase_file = paths["suitcase"]
+                glyph_file = paths["glyph"]
+                entry_count = 0
+                last_activity = "Never"
+                if suitcase_file.exists():
+                    with open(suitcase_file, "r", encoding="utf-8") as f:
+                        suitcase = json.load(f)
+                    entry_count = len(suitcase)
+                    if entry_count > 0:
+                        last_activity = suitcase[-1].get("timestamp", "Unknown")
+                state = "UNKNOWN"
+                if glyph_file.exists():
+                    with open(glyph_file, "r", encoding="utf-8") as f:
+                        glyph = json.load(f)
+                    state = glyph.get("state", "UNKNOWN")
+                state_icon = {"ACTIVE": "🟢", "RESTRICTED": "🟡", "REVOKED": "🔴", "QUARANTINED": "🟣", "SUSPENDED": "🟠"}.get(state, "⚪")
+                print(f"{state_icon} {dbc.get('agent_name', 'Unnamed Agent')}")
+                print(f" ID: {dbc.get('dbc_id', 'Unknown')}")
+                print(f" State: {state}")
+                print(f" Custodian: {dbc.get('custodian_id', 'Unknown')}")
+                print(f" Entries: {entry_count}")
+                print(f" Last Activity: {last_activity}")
+                print(f" Files: {dbc_file.name}")
+                print()
+            except Exception as e:
+                print(f"⚠ Error reading {dbc_file}: {e}")
+                print()
 
     def generate_custom_glyph(self, merkle_root: str, state: str, **kwargs) -> Optional[dict]:
         if not EnhancedHGLGenerator:
             print("✗ Visual module missing.")
             return None
-        # ... (rest of glyph code) ...
-        pass
-    
-    # ... (rest of methods) ...
+        generator = EnhancedHGLGenerator()
+        glyph_data = generator.generate_glyph_data(
+            merkle_root=merkle_root,
+            state=state,
+            custodian_id=kwargs.get("custodian", ""),
+            agent_name=kwargs.get("name", ""),
+        )
+        if glyph_data:
+            output_format = kwargs.get("output", "text")
+            if output_format == "svg":
+                svg_content = generator.generate_svg_template(glyph_data)
+                if kwargs.get("svg_file"):
+                    with open(kwargs["svg_file"], "w", encoding="utf-8") as f:
+                        f.write(svg_content)
+                    print(f"✓ SVG saved to {kwargs['svg_file']}")
+                else:
+                    print(svg_content)
+            else:
+                generator.print_glyph_info(glyph_data, format=output_format)
+            return glyph_data
+        return None
+
+    def show_agent_info(self, dbc_file: str) -> None:
+        print("\n📊 Agent Information")
+        print("=" * 60)
+        try:
+            with open(dbc_file, "r", encoding="utf-8") as f:
+                dbc = json.load(f)
+            print(f"Name: {dbc.get('agent_name', 'Unnamed Agent')}")
+            print(f"DBC ID: {dbc.get('dbc_id')}")
+            print(f"Custodian: {dbc.get('custodian_id')}")
+            print(f"Created: {dbc.get('timestamp')}")
+            print(f"Merkle Root: {str(dbc.get('merkle_root', ''))[:32]}...")
+            print()
+            paths = derive_agent_paths(dbc_file)
+            glyph_file = paths["glyph"]
+            suitcase_file = paths["suitcase"]
+            if glyph_file.exists():
+                with open(glyph_file, "r", encoding="utf-8") as f:
+                    glyph = json.load(f)
+                print("Visual Identity (HGL Glyph):")
+                print(f" State: {glyph.get('state')}")
+                print(f" Shape: {glyph.get('visual_attributes', {}).get('shape')}")
+                print(f" Color: {glyph.get('visual_attributes', {}).get('color')}")
+                print()
+            if suitcase_file.exists():
+                with open(suitcase_file, "r", encoding="utf-8") as f:
+                    suitcase = json.load(f)
+                print(f"Lifecycle Log (SUITCASE): {len(suitcase)} entries")
+                print("Recent Activity:")
+                for entry in suitcase[-5:]:
+                    print(f" • {entry.get('timestamp')}: {entry.get('event_type')}")
+            print("\n" + "=" * 60)
+        except Exception as e:
+            print(f"Error: {e}")
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -331,9 +421,14 @@ def main():
         cli.verify_agent(args.dbc, args.suitcase)
     elif args.command == "update-state":
         cli.update_agent_state(args.dbc, args.suitcase, args.state, args.reason)
+    elif args.command == "list":
+        cli.list_agents(args.directory)
+    elif args.command == "glyph":
+        cli.generate_custom_glyph(args.merkle_root, args.state, custodian=args.custodian, name=args.name, output=args.output, svg_file=args.svg_file)
+    elif args.command == "info":
+        cli.show_agent_info(args.dbc)
     elif args.command == "version":
         cli.print_banner()
-    # Add other commands as needed...
 
 if __name__ == "__main__":
     main()
