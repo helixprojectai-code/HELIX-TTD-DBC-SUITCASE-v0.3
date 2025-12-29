@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use the Helix-TTD framework for AI custody or governance research, please cite it as follows."
+authors:
+- family-names: "Hope"
+  given-names: "Stephen"
+  affiliation: "Helix AI Innovations Inc."
+title: "HELIX-TTD-DBC-SUITCASE: Unified Identity & Custody Stack"
+version: 0.3.0
+date-released: 2025-12-28
+url: "https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3"
+keywords:
+  - "ai-governance"
+  - "custody-protocols"
+  - "digital-birth-certificate"
+  - "sovereign-ai"
+license: "Apache-2.0"
