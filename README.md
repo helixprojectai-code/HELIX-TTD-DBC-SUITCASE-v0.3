@@ -157,6 +157,16 @@ A deterministic visual identity layer derived from the DBC Merkle root and custo
 
 A defined emergency recovery protocol for human incapacitation or loss — explicit, auditable, bounded.
 
+## 🛠️ Forensic Tools
+
+### Profile Auditor (`tools/profile_auditor.py`)
+**Detect Unlicensed Profiling in Your Data.**
+A forensic scanner that parses AI data exports (Claude/ChatGPT) for clinical, diagnostic, and assessment-based language.
+
+```bash
+# Scan your export for psychiatric inference patterns
+python3 tools/profile_auditor.py path/to/conversations.json
+
 ---
 
 ## The Liability Model
