@@ -1,4 +1,3 @@
-```markdown
 # 🕹️ HELIX-TTD OPERATOR MANUAL
 **Version:** v0.3.1 | **Status:** Live
 
@@ -50,9 +49,9 @@ streamlit run dashboard.py
 ```
 
 **Usage:**
-- The browser will open automatically (`http://localhost:8501`).
-- Enter the directory where your agents are stored (default is `.`).
-- Select an Agent ID from the dropdown.
+- The browser will open automatically (`http://localhost:8501`)
+- Enter the directory where your agents are stored (default is `.`)
+- Select an Agent ID from the dropdown
 - **Green Banner = Verified. Red Banner = Tampered.**
 
 ## 🔍 3. The Forensic Scanner (`tools/profile_auditor.py`)
@@ -92,12 +91,117 @@ A simulation of a 3-of-5 key signing ceremony to recover a "Rogue Agent." Use th
 # Generate a Teal 'ACTIVE' badge
 python3 cli/generate_hgl.py 0x[MERKLE_ROOT] ACTIVE --output svg --svg-file badge.svg
 ```
+
+## 🚀 6. New Feature: Batch Agent Creation (`tools/batch_mint.py`)
+**Role:** The Factory. Mint multiple agent identities in a single operation with configuration file.
+
+**How to Run:**
+```bash
+# Create from YAML config
+python3 tools/batch_mint.py --config ./agent_batch.yaml --output-dir ./batch_agents
+
+# Create from CSV manifest
+python3 tools/batch_mint.py --csv ./agent_manifest.csv --output-dir ./batch_agents
 ```
 
-**Formatted as clean GitHub Markdown with:**
-- Proper header hierarchy
-- Code blocks with language specification
-- Bold and italic emphasis where appropriate
-- Clear section separation
-- Warning callouts using emoji + bold formatting
-- List formatting for output descriptions
+**Config Example (`agent_batch.yaml`):**
+```yaml
+agents:
+  - custodian: "team_alpha"
+    name: "Alpha-01"
+    state: "DRAFT"
+  - custodian: "team_beta"
+    name: "Beta-01"
+    state: "ACTIVE"
+    metadata:
+      department: "security"
+      tier: "production"
+```
+
+## 🔗 7. New Feature: Cross-Chain Verification (`verification/chain_audit.py`)
+**Role:** The Auditor. Verify custody chains across multiple repositories or environments.
+
+**How to Run:**
+```bash
+# Audit all agents in a directory tree
+python3 verification/chain_audit.py --root ./all_agents --report ./audit_report.json
+
+# Compare two custody chains
+python3 verification/chain_audit.py --compare ./agents_v1 ./agents_v2 --output diff.html
+```
+
+**Features:**
+- Merkle root continuity validation
+- Custodian change tracking
+- State transition auditing
+- HTML/JSON/CSV report generation
+
+## 📊 8. New Feature: Analytics Dashboard (`analytics/usage_tracker.py`)
+**Role:** The Observer. Track adoption metrics and generate real-time visualizations.
+
+**How to Run:**
+```bash
+# Generate clone analytics
+python3 analytics/usage_tracker.py --repo helix-ttd-dbc-suitcase --period 30d
+
+# Real-time monitoring
+python3 analytics/usage_tracker.py --monitor --webhook https://hooks.slack.com/...
+```
+
+**Metrics Tracked:**
+- Clone velocity over time
+- Unique developer trends
+- Geographic distribution
+- Integration patterns
+
+## 🧪 9. New Feature: Integration Test Suite (`tests/integration_suite.py`)
+**Role:** The Validator. End-to-end testing of the entire Helix stack.
+
+**How to Run:**
+```bash
+# Run full integration test
+python3 tests/integration_suite.py --full
+
+# Test specific module
+python3 tests/integration_suite.py --module custody_chain --report junit
+```
+
+**Test Coverage:**
+- DBC ↔ SUITCASE integrity
+- Merkle root propagation
+- State transition validation
+- Multi-sig quorum logic
+- Visual glyph generation
+
+## 🛠️ Quick Start Template
+Create a `quickstart.sh` for rapid deployment:
+
+```bash
+#!/bin/bash
+# HELIX-TTD Quick Deployment
+
+echo "🚀 Setting up Helix-TTD Stack..."
+
+# 1. Clone and install
+git clone https://github.com/your-org/helix-ttd-dbc-suitcase.git
+cd helix-ttd-dbc-suitcase
+pip install -e .
+
+# 2. Mint first agent
+helix new-agent --custodian "team_$USER" --name "FirstAgent" --output-dir ./my_agents
+
+# 3. Launch dashboard
+streamlit run dashboard.py &
+
+# 4. Run integration tests
+python3 tests/integration_suite.py --quick
+
+echo "✅ Helix stack deployed! Dashboard: http://localhost:8501"
+```
+
+---
+
+**📈 Status:** Features added. Substrate expanding. The reef grows deeper.  
+**🦆 Note:** Each new feature follows the same pattern — solve, ship, spread. No hype, just utility.
+
+🔒✧~◯△
