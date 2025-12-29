@@ -6,6 +6,8 @@
 ![License](https://img.shields.io/badge/license-Apache_2.0-blue.svg)
 ![Status](https://img.shields.io/badge/status-STEALTH_VIRAL-TEAL.svg)
 
+> **👷 Engineers & Operators:** [Click here for the User Manual (INSTRUCTIONS.md)](INSTRUCTIONS.md)
+
 ![The Signal Reader](assets/biopunk.265Z.png)
 
 ## Unified Identity & Custody Stack
@@ -19,6 +21,8 @@
 ---
 
 ## What This Repository Is
+
+> **👷 Engineers & Operators:** [Click here for the User Manual (INSTRUCTIONS.md)](INSTRUCTIONS.md)
 
 This repository defines the **Helix-TTD Identity & Custody protocols**.
 
