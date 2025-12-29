@@ -1,115 +1,183 @@
 # 🕹️ HELIX-TTD OPERATOR MANUAL
-**Version:** v0.3.1 | **Status:** Live
 
-This document provides specific execution instructions for every tool in the Helix stack.
+**Version:** v0.3.1
+**Status:** Live (Core) + Extended (Optional)
 
-## ⚡ 0. Prerequisites (Do this first)
-Before running individual scripts, ensure the package is installed in editable mode. This links the `helix` command to your system path.
+This manual provides **execution-level instructions** for every operational tool in the Helix-TTD stack.
+All commands are deterministic, local-first, and auditable.
+
+---
+
+## ⚡ 0. Prerequisites (Required)
+
+Install the package in **editable mode** so the `helix` command resolves correctly.
 
 ```bash
-# From the repository root
+# From repository root
 pip install -e .
 ```
 
-## 🧬 1. The Core CLI (`helix.py`)
-**Role:** The Engine. Used for minting, verifying, and updating agents.
+This links the CLI entrypoint into your environment.
 
-**How to Run:**
-You can use the global `helix` command OR run the script directly.
+---
+
+## 🧬 1. Core CLI — `helix.py`
+
+**Role:** Engine
+**Purpose:** Minting, verification, and lifecycle mutation of agent identities.
+
+### Run Modes
 
 ```bash
-# Option A: System Command (Recommended)
+# Preferred (installed entrypoint)
 helix version
 
-# Option B: Direct Python Execution
+# Direct execution
 python3 helix.py version
 ```
 
-**Common Workflows:**
+### Common Workflows
+
+#### Mint a new Agent Identity
 
 ```bash
-# Mint a new Identity
-helix new-agent --custodian "admin_key_01" --name "Agent_Alpha" --output-dir ./agents
-
-# Verify Custody Chain (The Audit)
-helix verify --dbc ./agents/*.dbc.json --suitcase ./agents/*.suitcase.json
-
-# Update State (The Lifecycle)
-helix update-state --dbc ./agents/*.dbc.json --suitcase ./agents/*.suitcase.json --state ACTIVE --reason "Deployment"
+helix new-agent \
+  --custodian "admin_key_01" \
+  --name "Agent_Alpha" \
+  --output-dir ./agents
 ```
 
-## 🦆 2. The Watchtower (`dashboard.py`)
-**Role:** The Dashboard. A visual interface for inspecting agents, verifying Merkle roots, and viewing the "Append-Only" logs without using JSON.
+#### Verify Custody Chain (Audit Path)
 
-⚠️ **IMPORTANT:** This is a Streamlit app. Do not run with `python`.
+```bash
+helix verify \
+  --dbc ./agents/*.dbc.json \
+  --suitcase ./agents/*.suitcase.json
+```
 
-**How to Run:**
+#### Update Agent State (Lifecycle Transition)
+
+```bash
+helix update-state \
+  --dbc ./agents/*.dbc.json \
+  --suitcase ./agents/*.suitcase.json \
+  --state ACTIVE \
+  --reason "Deployment"
+```
+
+---
+
+## 🦆 2. Watchtower Dashboard — `dashboard.py`
+
+**Role:** Observer
+**Purpose:** Visual inspection of custody chains and append-only logs.
+
+⚠️ **Important:** This is a **Streamlit app**. Do **not** run with `python`.
+
+### Launch
+
 ```bash
 streamlit run dashboard.py
 ```
 
-**Usage:**
-- The browser will open automatically (`http://localhost:8501`)
-- Enter the directory where your agents are stored (default is `.`)
-- Select an Agent ID from the dropdown
-- **Green Banner = Verified. Red Banner = Tampered.**
+### Usage
 
-## 🔍 3. The Forensic Scanner (`tools/profile_auditor.py`)
-**Role:** The Weapon. Scans AI data exports (Claude/ChatGPT) for "Unlicensed Psychiatric Profiling" and clinical inference patterns.
+* Browser opens at `http://localhost:8501`
+* Select an agent directory (default: `.`)
+* Choose an Agent ID from the dropdown
 
-**How to Run:**
+**Status Indicators**
+
+* 🟢 Green banner → Chain verified
+* 🔴 Red banner → Tampering or break detected
+
+---
+
+## 🔍 3. Forensic Scanner — `tools/profile_auditor.py`
+
+**Role:** Weapon
+**Purpose:** Detect unlicensed psychiatric profiling and clinical inference in AI exports.
+
+### Run
+
 ```bash
-# Scan a specific file
-python3 tools/profile_auditor.py /path/to/claude_export/memories.json
+# Scan a single export
+python3 tools/profile_auditor.py /path/to/memories.json
 
-# Scan an entire directory (Auto-detects memories.json)
-python3 tools/profile_auditor.py /path/to/unzipped_export_folder/
+# Scan an entire export directory
+python3 tools/profile_auditor.py /path/to/unzipped_export/
 ```
 
-**Output:**
-A threat report listing instances of:
-- Diagnostic Language ("symptoms of", "consistent with")
-- Pharmacological Inference ("medication", "dosage")
-- Protected Attributes ("race", "ethnicity")
+### Detects
 
-## 🛡️ 4. The Nuclear Switch (`cli/quorum_logic.py`)
-**Role:** The Defense. A test harness for the Multi-Sig Emergency Recovery Protocol.
+* Diagnostic language (“symptoms of”, “consistent with”)
+* Pharmacological inference (“medication”, “dosage”)
+* Protected attributes (“race”, “ethnicity”)
 
-**How to Run:**
+Outputs a **threat report**, not an interpretation.
+
+---
+
+## 🛡️ 4. Quorum Recovery Simulator — `cli/quorum_logic.py`
+
+**Role:** Defense
+**Purpose:** Validate multi-sig emergency recovery math.
+
+### Run
+
 ```bash
 python3 cli/quorum_logic.py
 ```
 
-**Output:**
-A simulation of a 3-of-5 key signing ceremony to recover a "Rogue Agent." Use this to validate the math behind the governance.
+Simulates a **3-of-5 signing quorum** for custody recovery.
+No production state is modified.
 
-## 🎨 5. Visual Identity Generator (`cli/generate_hgl.py`)
-**Role:** The Paint. Generates standalone SVG badges based on a Merkle Root.
+---
 
-**How to Run:**
+## 🎨 5. Visual Identity Generator — `cli/generate_hgl.py`
+
+**Role:** Paint
+**Purpose:** Deterministic SVG glyph generation from Merkle roots.
+
 ```bash
-# Generate a Teal 'ACTIVE' badge
-python3 cli/generate_hgl.py 0x[MERKLE_ROOT] ACTIVE --output svg --svg-file badge.svg
+python3 cli/generate_hgl.py \
+  0x[MERKLE_ROOT] \
+  ACTIVE \
+  --output svg \
+  --svg-file badge.svg
 ```
 
-## 🚀 6. New Feature: Batch Agent Creation (`tools/batch_mint.py`)
-**Role:** The Factory. Mint multiple agent identities in a single operation with configuration file.
+---
 
-**How to Run:**
+## 🚀 6. Batch Agent Creation — `tools/batch_mint.py`
+
+**Role:** Factory
+**Status:** Optional / Extended
+
+### Run (YAML)
+
 ```bash
-# Create from YAML config
-python3 tools/batch_mint.py --config ./agent_batch.yaml --output-dir ./batch_agents
-
-# Create from CSV manifest
-python3 tools/batch_mint.py --csv ./agent_manifest.csv --output-dir ./batch_agents
+python3 tools/batch_mint.py \
+  --config ./agent_batch.yaml \
+  --output-dir ./batch_agents
 ```
 
-**Config Example (`agent_batch.yaml`):**
+### Run (CSV)
+
+```bash
+python3 tools/batch_mint.py \
+  --csv ./agent_manifest.csv \
+  --output-dir ./batch_agents
+```
+
+### Example Config
+
 ```yaml
 agents:
   - custodian: "team_alpha"
     name: "Alpha-01"
     state: "DRAFT"
+
   - custodian: "team_beta"
     name: "Beta-01"
     state: "ACTIVE"
@@ -118,90 +186,102 @@ agents:
       tier: "production"
 ```
 
-## 🔗 7. New Feature: Cross-Chain Verification (`verification/chain_audit.py`)
-**Role:** The Auditor. Verify custody chains across multiple repositories or environments.
+---
 
-**How to Run:**
+## 🔗 7. Cross-Chain Verification — `verification/chain_audit.py`
+
+**Role:** Auditor
+**Status:** Optional / Extended
+
+### Run
+
 ```bash
-# Audit all agents in a directory tree
-python3 verification/chain_audit.py --root ./all_agents --report ./audit_report.json
-
-# Compare two custody chains
-python3 verification/chain_audit.py --compare ./agents_v1 ./agents_v2 --output diff.html
+python3 verification/chain_audit.py \
+  --root ./all_agents \
+  --report audit_report.json
 ```
 
-**Features:**
-- Merkle root continuity validation
-- Custodian change tracking
-- State transition auditing
-- HTML/JSON/CSV report generation
+### Compare Environments
 
-## 📊 8. New Feature: Analytics Dashboard (`analytics/usage_tracker.py`)
-**Role:** The Observer. Track adoption metrics and generate real-time visualizations.
-
-**How to Run:**
 ```bash
-# Generate clone analytics
-python3 analytics/usage_tracker.py --repo helix-ttd-dbc-suitcase --period 30d
-
-# Real-time monitoring
-python3 analytics/usage_tracker.py --monitor --webhook https://hooks.slack.com/...
+python3 verification/chain_audit.py \
+  --compare ./agents_v1 ./agents_v2 \
+  --output diff.html
 ```
 
-**Metrics Tracked:**
-- Clone velocity over time
-- Unique developer trends
-- Geographic distribution
-- Integration patterns
+Validates:
 
-## 🧪 9. New Feature: Integration Test Suite (`tests/integration_suite.py`)
-**Role:** The Validator. End-to-end testing of the entire Helix stack.
+* Merkle continuity
+* Custodian changes
+* State transitions
 
-**How to Run:**
+---
+
+## 📊 8. Usage Analytics — `analytics/usage_tracker.py`
+
+**Role:** Observer
+**Status:** Optional / Experimental
+
 ```bash
-# Run full integration test
+python3 analytics/usage_tracker.py \
+  --repo helix-ttd-dbc-suitcase \
+  --period 30d
+```
+
+Supports webhook-based monitoring (Slack, etc.).
+
+---
+
+## 🧪 9. Integration Test Suite — `tests/integration_suite.py`
+
+**Role:** Validator
+
+```bash
+# Full test run
 python3 tests/integration_suite.py --full
 
-# Test specific module
-python3 tests/integration_suite.py --module custody_chain --report junit
+# Module-specific
+python3 tests/integration_suite.py \
+  --module custody_chain \
+  --report junit
 ```
 
-**Test Coverage:**
-- DBC ↔ SUITCASE integrity
-- Merkle root propagation
-- State transition validation
-- Multi-sig quorum logic
-- Visual glyph generation
+Coverage includes:
 
-## 🛠️ Quick Start Template
-Create a `quickstart.sh` for rapid deployment:
+* DBC ↔ SUITCASE integrity
+* Merkle propagation
+* State transitions
+* Quorum math
+* Glyph generation
+
+---
+
+## 🛠️ Quick Start Script (Operator Template)
 
 ```bash
 #!/bin/bash
-# HELIX-TTD Quick Deployment
+echo "🚀 Setting up Helix-TTD..."
 
-echo "🚀 Setting up Helix-TTD Stack..."
-
-# 1. Clone and install
 git clone https://github.com/your-org/helix-ttd-dbc-suitcase.git
 cd helix-ttd-dbc-suitcase
 pip install -e .
 
-# 2. Mint first agent
-helix new-agent --custodian "team_$USER" --name "FirstAgent" --output-dir ./my_agents
+helix new-agent \
+  --custodian "team_$USER" \
+  --name "FirstAgent" \
+  --output-dir ./my_agents
 
-# 3. Launch dashboard
 streamlit run dashboard.py &
-
-# 4. Run integration tests
 python3 tests/integration_suite.py --quick
 
-echo "✅ Helix stack deployed! Dashboard: http://localhost:8501"
+echo "✅ Helix-TTD online at http://localhost:8501"
 ```
 
 ---
 
-**📈 Status:** Features added. Substrate expanding. The reef grows deeper.  
-**🦆 Note:** Each new feature follows the same pattern — solve, ship, spread. No hype, just utility.
+📈 **Status:** Core stable. Extensions expanding.
+🦆 **Operating Principle:** Solve → Ship → Spread.
+No hype. No permissions. Just tools.
 
-🔒✧~◯△
+---
+
