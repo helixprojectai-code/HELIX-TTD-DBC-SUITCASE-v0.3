@@ -15,7 +15,7 @@ If you discover a vulnerability that allows for:
 3.  **Identity Spoofing** (HGL collision)
 
 Please do **NOT** open a public issue. 
-Email the Custodian directly at: **stephen@helix-ttd.ai** (or via LinkedIn DM).
+Email the Custodian directly at: **helix.project.ai@helixprojectai.com** (or via LinkedIn DM).
 
 ## Custody Model
 Helix-TTD operates on a **Custody-Before-Trust** model.
