@@ -7,14 +7,16 @@ Core logic for the Helix-TTD Identity & Custody stack.
 import hashlib
 import json
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, Optional, Tuple
+
+def get_canonical_json(data: Dict) -> bytes:
+    """Standardized JSON serialization for hashing."""
+    return json.dumps(data, sort_keys=True, separators=(',', ':')).encode()
 
 def create_dbc(custodian_id: str, agent_name: str) -> Dict:
     """Create a basic DBC structure."""
-    # Ensure UTC for consistency
     timestamp = datetime.utcnow().isoformat() + "Z"
     
-    # Create DBC content
     dbc_data = {
         "version": "v0.3",
         "type": "DBC",
@@ -22,13 +24,12 @@ def create_dbc(custodian_id: str, agent_name: str) -> Dict:
         "custodian_id": custodian_id,
         "timestamp": timestamp,
         "creation_reason": "Agent instantiation",
-        "hardware_sig": "TPM2.0_SIMULATED",  # In real implementation, this tracks back to the YubiKey
-        "parent_dbc": None  # Root DBC has no parent
+        "hardware_sig": "TPM2.0_SIMULATED", 
+        "parent_dbc": None 
     }
     
-    # Create Merkle root (Deterministic: Sort keys, no spaces)
-    content_str = json.dumps(dbc_data, sort_keys=True, separators=(',', ':'))
-    merkle_root = hashlib.sha256(content_str.encode()).hexdigest()
+    # Deterministic Root
+    merkle_root = hashlib.sha256(get_canonical_json(dbc_data)).hexdigest()
     
     dbc_data["merkle_root"] = merkle_root
     dbc_data["dbc_id"] = f"DBC-{merkle_root[:16]}"
@@ -44,7 +45,9 @@ def create_suitcase_entry(
     """Create a SUITCASE entry (append-only log)."""
     timestamp = datetime.utcnow().isoformat() + "Z"
     
-    entry = {
+    # 1. Define the Content Payload (The "Truth")
+    # Only these fields are hashed to create entry_hash
+    content_payload = {
         "version": "v0.3",
         "type": "SUITCASE_ENTRY",
         "dbc_root": dbc_root,
@@ -53,82 +56,65 @@ def create_suitcase_entry(
         "details": details
     }
     
-    # Calculate hash of THIS entry content
-    entry_str = json.dumps(entry, sort_keys=True, separators=(',', ':'))
-    current_hash = hashlib.sha256(entry_str.encode()).hexdigest()
+    # 2. Hash the Content
+    current_hash = hashlib.sha256(get_canonical_json(content_payload)).hexdigest()
     
-    # Chain Logic
-    if previous_hash:
-        # Chain: Hash(Previous Hash + Current Content Hash)
-        chain_payload = f"{previous_hash}{current_hash}"
-        chain_hash = hashlib.sha256(chain_payload.encode()).hexdigest()
-        entry["previous_hash"] = previous_hash
-        entry["hash_chain"] = chain_hash
-    else:
-        # Genesis Entry: Chain is just the current hash
-        entry["hash_chain"] = current_hash
-    
+    # 3. Construct the Full Entry (Content + Metadata)
+    entry = content_payload.copy()
     entry["entry_hash"] = current_hash
     entry["entry_id"] = f"ENTRY-{current_hash[:16]}"
     
+    # 4. Chain Logic (The "Spine")
+    if previous_hash:
+        # Chain = Hash(Previous_Hash + Current_Content_Hash)
+        chain_payload = f"{previous_hash}{current_hash}".encode()
+        chain_hash = hashlib.sha256(chain_payload).hexdigest()
+        entry["previous_hash"] = previous_hash
+        entry["hash_chain"] = chain_hash
+    else:
+        # Genesis Entry
+        entry["hash_chain"] = current_hash
+        entry["previous_hash"] = None
+    
     return entry
 
-def main():
-    """Demonstrate DBC/SUITCASE operations."""
-    print("🧬 HELIX-TTD-DBC-SUITCASE Demo")
-    print("=" * 50)
-    
-    # Create a DBC
-    print("\n1. Creating DBC (Digital Birth Certificate)...")
-    dbc = create_dbc(
-        custodian_id="custodian_alice_001",
-        agent_name="Alpha-Agent-01"
-    )
-    print(f"   DBC ID: {dbc['dbc_id']}")
-    print(f"   Merkle Root: {dbc['merkle_root'][:32]}...")
-    print(f"   Custodian: {dbc['custodian_id']}")
-    
-    # Create SUITCASE entries
-    print("\n2. Creating SUITCASE entries (Append-only log)...")
-    
-    # First entry: Agent instantiation
-    entry1 = create_suitcase_entry(
-        dbc_root=dbc["merkle_root"],
-        event_type="INSTANTIATION",
-        details={"status": "created", "resources": ["cpu", "memory", "network"]}
-    )
-    print(f"   Entry 1: {entry1['event_type']} - {entry1['entry_id']}")
-    
-    # Second entry: Capability grant
-    entry2 = create_suitcase_entry(
-        dbc_root=dbc["merkle_root"],
-        event_type="CAPABILITY_GRANT",
-        details={"capability": "file_system_access", "level": "read_only"},
-        previous_hash=entry1["entry_hash"]
-    )
-    print(f"   Entry 2: {entry2['event_type']} - {entry2['entry_id']}")
-    
-    # Third entry: State change
-    entry3 = create_suitcase_entry(
-        dbc_root=dbc["merkle_root"],
-        event_type="STATE_CHANGE",
-        details={"from": "INITIALIZING", "to": "ACTIVE"},
-        previous_hash=entry2["entry_hash"]
-    )
-    print(f"   Entry 3: {entry3['event_type']} - {entry3['entry_id']}")
-    
-    print("\n" + "=" * 50)
-    print("📦 SUITCASE Integrity Check:")
-    print(f"   Hash chain maintained: {'✓' if entry3['previous_hash'] == entry2['entry_hash'] else '✗'}")
-    print(f"   Root DBC preserved: {'✓' if entry3['dbc_root'] == dbc['merkle_root'] else '✗'}")
-    print(f"   All entries tethered to DBC: ✓")
-    
-    print("\n🎯 Structural Custody Established:")
-    print("   • Identity anchored by DBC")
-    print("   • Behavior governed by SUITCASE")
-    print("   • No orphaned agents")
-    print("   • No silent reassignment")
-    print("   • Pure structural custody ✓")
-
-if __name__ == "__main__":
-    main()
+def validate_entry_integrity(entry: Dict) -> Tuple[bool, str]:
+    """
+    Recomputes hashes to detect content tampering.
+    Returns: (is_valid, message)
+    """
+    try:
+        # 1. Reconstruct the Pure Content Payload
+        # We must manually extract ONLY the fields that were originally hashed
+        content_payload = {
+            "version": entry.get("version"),
+            "type": entry.get("type"),
+            "dbc_root": entry.get("dbc_root"),
+            "timestamp": entry.get("timestamp"),
+            "event_type": entry.get("event_type"),
+            "details": entry.get("details")
+        }
+        
+        # 2. Re-Hash Content
+        recalc_hash = hashlib.sha256(get_canonical_json(content_payload)).hexdigest()
+        
+        if recalc_hash != entry.get("entry_hash"):
+            return False, f"Content Tampered: Calc {recalc_hash[:8]} != Stored {entry.get('entry_hash', '')[:8]}"
+            
+        # 3. Verify Chain Link
+        prev_hash = entry.get("previous_hash")
+        stored_chain = entry.get("hash_chain")
+        
+        if prev_hash:
+            chain_payload = f"{prev_hash}{recalc_hash}".encode()
+            recalc_chain = hashlib.sha256(chain_payload).hexdigest()
+            if recalc_chain != stored_chain:
+                return False, "Chain Broken: Link hash mismatch"
+        elif stored_chain != recalc_hash:
+             # Genesis check
+             return False, "Genesis Chain Broken"
+             
+        return True, "Valid"
+        
+    except Exception as e:
+        return False, f"Validation Error: {str(e)}"
