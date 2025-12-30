@@ -3,8 +3,22 @@
 [![Helix-TTD Core CI](https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3/actions/workflows/helix_ci.yml/badge.svg)](https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3/actions/workflows/helix_ci.yml)
 **The structural prevention of anthropomorphic evasion.**
 
-![License](https://img.shields.io/badge/license-Apache_2.0-blue.svg)
-![Status](https://img.shields.io/badge/status-STEALTH_VIRAL-TEAL.svg)
+<div align="center">
+
+<!-- TIER 1: LIVE TELEMETRY (The Pulse) -->
+[![Helix Core CI](https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3/actions/workflows/helix_ci.yml/badge.svg)](https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3/actions/workflows/helix_ci.yml)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
+<!-- TIER 2: ARCHITECTURE (The Tech) -->
+![Stack](https://img.shields.io/badge/Stack-Python_3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Interface](https://img.shields.io/badge/Interface-CLI_%2B_Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
+![Cryptography](https://img.shields.io/badge/Crypto-Ed25519_%2F_SHA256-black?style=for-the-badge&logo=linux&logoColor=white)
+
+<!-- TIER 3: IMPACT (The Signal) -->
+![Adoption](https://img.shields.io/badge/Adoption-STEALTH__VIRAL-00e6e6?style=for-the-badge&logo=github&logoColor=black)
+![Status](https://img.shields.io/badge/Status-AUDIT__READY-success?style=for-the-badge&logo=shield&logoColor=white)
+
+</div>
 
 > **👷 Engineers & Operators:** [Click here for the User Manual (INSTRUCTIONS.md)](INSTRUCTIONS.md)
 
