@@ -1,12 +1,10 @@
 # DBC × SUITCASE: Unified Identity & Custody Stack
 ### Version v0.3 // December 28, 2025
-[![Helix-TTD Core CI](https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3/actions/workflows/helix_ci.yml/badge.svg)](https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3/actions/workflows/helix_ci.yml)
-**The structural prevention of anthropomorphic evasion.**
 
 <div align="center">
 
 <!-- TIER 1: LIVE TELEMETRY (The Pulse) -->
-[![Helix Core CI](https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3/actions/workflows/helix_ci.yml/badge.svg)](https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3/actions/workflows/helix_ci.yml)
+[![Helix Core CI](https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3/actions/workflows/helix_ci.yml/badge.svg)](https://github.com/helixprojectai-code/HELIX-TTD-DBC-SUITCASE-v0.3/actions/workflows/helix_ci.yml) **The structural prevention of anthropomorphic evasion.**
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 <!-- TIER 2: ARCHITECTURE (The Tech) -->
