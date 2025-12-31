@@ -67,13 +67,17 @@ jobs:
         # 5. List Agents
         python3 helix.py list --directory artifacts
 
-    # --- SUPPLY CHAIN SECURITY ---
+
+# --- SUPPLY CHAIN SECURITY ---
     - name: 🛡️ Generate SBOM (Syft)
       uses: anchore/sbom-action@v0
       with:
         path: .
         format: spdx-json
         output-file: artifacts/helix-sbom-${{ matrix.python-version }}.spdx.json
+        # CRITICAL FIX: Make the upload name unique per matrix job
+        artifact-name: sbom-py${{ matrix.python-version }}
+        upload-artifact: false
 
     # --- THE CUSTODY GATE (ROBUST CHECK) ---
     - name: Assert Artifacts Exist

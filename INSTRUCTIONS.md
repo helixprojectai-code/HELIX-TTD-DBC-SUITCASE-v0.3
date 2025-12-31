@@ -93,20 +93,23 @@ streamlit run dashboard.py
 
 ---
 
-## 🔍 3. Forensic Scanner — `tools/profile_auditor.py`
+## 🔍 3. The Forensic Scanner (`tools/profile_auditor.py`)
+**Role:** The Weapon. Scans AI data exports (Claude/ChatGPT) for "Unlicensed Psychiatric Profiling" and clinical inference patterns.
 
-**Role:** Weapon
-**Purpose:** Detect unlicensed psychiatric profiling and clinical inference in AI exports.
+### 🛡️ Privacy & Security Protocol (READ FIRST)
+This tool processes sensitive inferred data (Health, Race, Identity).
+**Recommended Operational Security:**
+1.  **Offline Mode:** Disconnect the machine from the internet before running the scan.
+2.  **Ephemeral Storage:** Run in a container or VM that is wiped after use.
+3.  **Consent:** You must explicitly acknowledge authorization to scan the data.
 
-### Run
-
+### How to Run:
 ```bash
-# Scan a single export
-python3 tools/profile_auditor.py /path/to/memories.json
+# Scan a specific file (Requires explicit consent flag)
+python3 tools/profile_auditor.py /path/to/claude_export/memories.json --consent-acknowledged
 
-# Scan an entire export directory
-python3 tools/profile_auditor.py /path/to/unzipped_export/
-```
+# Scan an entire directory
+python3 tools/profile_auditor.py /path/to/unzipped_export_folder/ --consent-acknowledged
 
 ### Detects
 
