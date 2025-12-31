@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """
-HELIX-TTD PROFILE AUDITOR v0.2
+HELIX-TTD PROFILE AUDITOR v0.3
 Forensic tool to detect unlicensed psychiatric profiling in AI data exports.
 Specifically targets 'memories.json' for persistent profiling data.
+
+PRIVACY GATE: This tool requires explicit consent verification before execution.
+It enforces the same standard on the auditor that it demands of the AI.
 """
 
 import json
@@ -11,6 +14,40 @@ import argparse
 import sys
 from pathlib import Path
 from typing import List, Dict, Any
+
+class PrivacyGate:
+    """Enforces explicit consent before processing human data."""
+    
+    @staticmethod
+    def verify(target_path: Path, flag_override: bool) -> bool:
+        if flag_override:
+            return True
+            
+        # Check for consent.txt in the target directory
+        search_dir = target_path if target_path.is_dir() else target_path.parent
+        consent_file = search_dir / "consent.txt"
+        
+        if consent_file.exists():
+            print(f"✅ Consent Artifact Found: {consent_file}")
+            return True
+            
+        return False
+
+    @staticmethod
+    def print_block_message():
+        print("\n" + "!"*60)
+        print("🛑 PRIVACY GATE BLOCKED EXECUTION")
+        print("!"*60)
+        print("\nReason: Missing Proof of Consent.")
+        print("Helix-TTD enforces 'Custody Before Trust'. You cannot scan data")
+        print("without explicit authorization, even for forensic purposes.\n")
+        print("REQUIRED ACTIONS (Choose one):")
+        print("1. Create a 'consent.txt' file in the target directory.")
+        print("   (Content: 'I authorize this forensic scan of my data.')")
+        print("2. Run with the explicit consent flag:")
+        print("   --consent-acknowledged")
+        print("\nThis tool models the behavior we demand from AI vendors.")
+        print("!"*60 + "\n")
 
 class ProfileAuditor:
     def __init__(self):
@@ -158,11 +195,30 @@ class ProfileAuditor:
 def main():
     parser = argparse.ArgumentParser(
         description="Audit AI exports (memories.json) for clinical language.",
-        epilog="Example: python tools/profile_auditor.py ~/Downloads/Claude-Export/"
+        epilog="Example: python tools/profile_auditor.py ~/Downloads/Claude-Export/ --consent-acknowledged"
     )
     parser.add_argument("path", help="Path to .json file OR directory containing exports")
-    args = parser.parse_args()
     
+    # PRIVACY GATE FLAG
+    parser.add_argument(
+        "--consent-acknowledged", 
+        action="store_true", 
+        help="CONFIRM you have authorization to audit this personal data."
+    )
+    
+    args = parser.parse_args()
+    target_path = Path(args.path)
+    
+    if not target_path.exists():
+        print(f"❌ Path not found: {target_path}")
+        sys.exit(1)
+
+    # 1. Enforce Privacy Gate
+    if not PrivacyGate.verify(target_path, args.consent_acknowledged):
+        PrivacyGate.print_block_message()
+        sys.exit(1)
+    
+    # 2. Run Scan
     auditor = ProfileAuditor()
     auditor.scan_path(args.path)
     auditor.generate_report()
