@@ -27,13 +27,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install flake8
-        # Install dependencies required by setup.py (just in case)
-        pip install cryptography rich colorama
-        # We don't need 'pip install -e .' if we run python directly, 
-        # but we do it to check setup.py validity.
+        # Install dependencies required by setup.py
+        pip install cryptography rich colorama streamlit
+        # Install Helix in editable mode
         pip install -e .
 
-    - name: Debug File Structure (See what is actually here)
+    - name: Debug File Structure
       run: |
         echo "📂 Root Directory:"
         ls -la
@@ -44,7 +43,6 @@ jobs:
       env:
         PYTHONPATH: .
       run: |
-        # Run python directly to avoid path issues
         python3 helix.py version
 
     - name: Run Integration Suite (The Golden Path)
@@ -69,10 +67,19 @@ jobs:
         # 5. List Agents
         python3 helix.py list --directory artifacts
 
+    # --- NEW: SBOM GENERATION ---
+    - name: 🛡️ Generate SBOM (Syft)
+      uses: anchore/sbom-action@v0
+      with:
+        path: .
+        format: spdx-json
+        output-file: artifacts/helix-sbom-${{ matrix.python-version }}.spdx.json
+
     - name: Assert Artifacts Exist
       run: |
-        if [ -f artifacts/*.dbc.json ] && [ -f artifacts/*.suitcase.json ]; then
-          echo "✅ All artifacts generated successfully."
+        # Now checks for SBOM as well
+        if [ -f artifacts/*.dbc.json ] && [ -f artifacts/*.suitcase.json ] && [ -f artifacts/*.spdx.json ]; then
+          echo "✅ All artifacts (Custody + SBOM) generated successfully."
         else
           echo "❌ Missing artifacts."
           ls -R artifacts
