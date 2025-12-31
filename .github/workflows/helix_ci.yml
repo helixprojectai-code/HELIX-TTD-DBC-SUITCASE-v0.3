@@ -67,6 +67,7 @@ jobs:
         # 5. List Agents
         python3 helix.py list --directory artifacts
 
+
 # --- SUPPLY CHAIN SECURITY ---
     - name: 🛡️ Generate SBOM (Syft)
       uses: anchore/sbom-action@v0
