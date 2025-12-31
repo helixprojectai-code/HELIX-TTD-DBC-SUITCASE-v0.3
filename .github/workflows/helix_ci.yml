@@ -29,7 +29,7 @@ jobs:
         pip install flake8
         # Install dependencies required by setup.py
         pip install cryptography rich colorama streamlit
-        # Install Helix in editable mode
+        # Install Helix in editable mode to check setup.py validity
         pip install -e .
 
     - name: Debug File Structure
@@ -67,7 +67,7 @@ jobs:
         # 5. List Agents
         python3 helix.py list --directory artifacts
 
-    # --- NEW: SBOM GENERATION ---
+    # --- SUPPLY CHAIN SECURITY ---
     - name: 🛡️ Generate SBOM (Syft)
       uses: anchore/sbom-action@v0
       with:
@@ -75,16 +75,34 @@ jobs:
         format: spdx-json
         output-file: artifacts/helix-sbom-${{ matrix.python-version }}.spdx.json
 
+    # --- THE CUSTODY GATE (ROBUST CHECK) ---
     - name: Assert Artifacts Exist
       run: |
-        # Now checks for SBOM as well
-        if [ -f artifacts/*.dbc.json ] && [ -f artifacts/*.suitcase.json ] && [ -f artifacts/*.spdx.json ]; then
-          echo "✅ All artifacts (Custody + SBOM) generated successfully."
-        else
-          echo "❌ Missing artifacts."
-          ls -R artifacts
+        echo "🔍 Auditing Artifacts directory..."
+        ls -la artifacts/
+
+        # Check for DBC (The Identity)
+        count_dbc=$(find artifacts -maxdepth 1 -name "*.dbc.json" | wc -l)
+        if [ "$count_dbc" -eq 0 ]; then
+          echo "❌ FAILURE: No DBC (Identity) found."
           exit 1
         fi
+
+        # Check for SUITCASE (The Log)
+        count_case=$(find artifacts -maxdepth 1 -name "*.suitcase.json" | wc -l)
+        if [ "$count_case" -eq 0 ]; then
+          echo "❌ FAILURE: No Suitcase (Log) found."
+          exit 1
+        fi
+
+        # Check for SBOM (The Supply Chain)
+        count_sbom=$(find artifacts -maxdepth 1 -name "*.spdx.json" | wc -l)
+        if [ "$count_sbom" -eq 0 ]; then
+          echo "❌ FAILURE: No SBOM (Supply Chain) found."
+          exit 1
+        fi
+
+        echo "✅ CUSTODY GATE PASSED: Identity ($count_dbc), Log ($count_case), and SBOM ($count_sbom) verified."
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
